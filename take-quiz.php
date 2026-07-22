@@ -41,6 +41,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $answers = $_POST['answers'] ?? [];
     foreach ($questions as $q) {
         $selected = $answers[$q['id']] ?? null;
+        if (!is_string($selected)) {
+            $selected = null;
+        }
         $isCorrect = ($selected === $q['correct_option']);
         if ($isCorrect) {
             $score++;

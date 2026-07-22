@@ -20,7 +20,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Please enter a valid email address.';
     } else {
-        // ---- EDIT THIS: your real email address ----
         require __DIR__ . '/lib/PHPMailer/Exception.php';
         require __DIR__ . '/lib/PHPMailer/PHPMailer.php';
         require __DIR__ . '/lib/PHPMailer/SMTP.php';
@@ -28,19 +27,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $mail = new PHPMailer\PHPMailer\PHPMailer(true);
 
         try {
-            // ---- EDIT THESE with your Hostinger email details ----
+            // Mail credentials live in config.php (git-ignored) — see MAIL_* constants there.
             $mail->isSMTP();
-           
-            $mail->Host = 'smtp.hostinger.com';       // usually mail.yourdomain.com on Hostinger
+
+            $mail->Host = MAIL_HOST;
             $mail->SMTPAuth = true;
-            $mail->Username = 'contact@bcatutor.com'; // the mailbox you just created
-            $mail->Password = 'zUZ>AI%,g2B95Z"4%:yj`y>;5';  // its password
+            $mail->Username = MAIL_USERNAME;
+            $mail->Password = MAIL_PASSWORD;
             $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS;
             $mail->Port = 465;
-            // ========================================================
-        
-            $mail->setFrom('contact@bcatutor.com', 'BCA TUTOR Contact Form');
-            $mail->addAddress('contact@bcatutor.com'); // where you want to receive messages
+
+            $mail->setFrom(MAIL_USERNAME, 'BCA TUTOR Contact Form');
+            $mail->addAddress(MAIL_TO);
             $mail->addReplyTo($email, $name);
         
             $mail->Subject = 'BCA TUTOR contact form: ' . $name;

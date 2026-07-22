@@ -41,7 +41,7 @@ if ($title === '' || isContentEmpty($content)) {
     if ($check->fetchColumn() > 0) {
         $error = 'That URL slug is already in use — please choose a different one.';
     } else {
-        $content = strip_tags($content, '<p><h1><h2><h3><h4><strong><em><u><s><ul><ol><li><a><img><br><blockquote><code><pre><span><div><table><thead><tbody><tr><td><th>');
+        $content = sanitizeHtml($content);
 
         $stmt = $pdo->prepare("INSERT INTO posts (title, slug, type, semester, subject, content, created_by, sort_order, meta_description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([$title, $slug, $type, $semester, $subject, $content, $_SESSION['admin_id'], $sortOrder, $metaDescription]);

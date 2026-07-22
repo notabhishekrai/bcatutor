@@ -7,6 +7,15 @@ define('DB_USER', 'your_database_username_here');
 define('DB_PASS', 'your_database_password_here');
 // =======================================================================
 
+// ====== Contact form outgoing mail (Hostinger email account) ======
+// Find/create this under hPanel > Emails. Keep real values only in
+// config.php (git-ignored) — never commit real mail credentials.
+define('MAIL_HOST', 'smtp.hostinger.com');
+define('MAIL_USERNAME', 'your_mailbox@yourdomain.com');
+define('MAIL_PASSWORD', 'your_mailbox_password_here');
+define('MAIL_TO', 'your_mailbox@yourdomain.com');
+// =======================================================================
+
 date_default_timezone_set('Asia/Kathmandu'); // change if you like
 
 // ---- Security hardening ----
@@ -62,6 +71,61 @@ function isContentEmpty($html) {
     $text = strip_tags(html_entity_decode($html, ENT_QUOTES, 'UTF-8'));
     $text = str_replace("\xC2\xA0", ' ', $text); // non-breaking space -> regular space
     return trim($text) === '';
+}
+
+// ---- Post content sanitization ----
+// strip_tags() only removes disallowed tags — it does NOT touch attributes
+// on tags it keeps, so `<img src=x onerror=alert(1)>` sails right through
+// since <img> is allowed. This walks the DOM after strip_tags and drops
+// every attribute except an explicit per-tag allowlist, and blocks
+// javascript:/data:/vbscript: URLs on the ones that remain (href/src).
+function sanitizeHtml($html) {
+    $allowedTags = '<p><h1><h2><h3><h4><strong><em><u><s><ul><ol><li><a><img><br><blockquote><code><pre><span><div><table><thead><tbody><tr><td><th>';
+    $html = strip_tags($html, $allowedTags);
+
+    if (trim($html) === '') {
+        return $html;
+    }
+
+    $allowedAttributes = [
+        'a' => ['href'],
+        'img' => ['src', 'alt'],
+    ];
+
+    $dom = new DOMDocument();
+    libxml_use_internal_errors(true);
+    $dom->loadHTML(
+        '<?xml encoding="utf-8"?><div>' . $html . '</div>',
+        LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD
+    );
+    libxml_clear_errors();
+
+    foreach ($dom->getElementsByTagName('*') as $node) {
+        $tag = strtolower($node->nodeName);
+        $keep = $allowedAttributes[$tag] ?? [];
+
+        $toRemove = [];
+        foreach ($node->attributes as $attr) {
+            $name = strtolower($attr->nodeName);
+            if (!in_array($name, $keep, true)) {
+                $toRemove[] = $attr->nodeName;
+                continue;
+            }
+            if (in_array($name, ['href', 'src'], true) && preg_match('/^\s*(javascript|data|vbscript):/i', $attr->nodeValue)) {
+                $toRemove[] = $attr->nodeName;
+            }
+        }
+        foreach ($toRemove as $name) {
+            $node->removeAttribute($name);
+        }
+    }
+
+    $container = $dom->getElementsByTagName('div')->item(0);
+    $result = '';
+    foreach ($container->childNodes as $child) {
+        $result .= $dom->saveHTML($child);
+    }
+    return $result;
 }
 
 // ---- CSRF protection ----
