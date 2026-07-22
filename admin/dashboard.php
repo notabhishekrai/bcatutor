@@ -34,7 +34,7 @@ if ($filterAuthor !== '') {
     $conditions[] = 'posts.created_by = ?';
     $params[] = $filterAuthor;
 }
-if ($filterSubject !== '') {
+if ($filterSubject !== '' && $filterType !== 'blog') {
     $conditions[] = 'posts.subject = ?';
     $params[] = $filterSubject;
 }
@@ -109,12 +109,14 @@ require __DIR__ . '/../includes/header.php';
             <?php endforeach; ?>
         </select>
 
-        <select name="subject" onchange="this.form.submit()">
-            <option value="">All Subjects</option>
-            <?php foreach ($subjects as $s): ?>
-                <option value="<?= htmlspecialchars($s) ?>" <?= $filterSubject === $s ? 'selected' : '' ?>><?= htmlspecialchars($s) ?></option>
-            <?php endforeach; ?>
-        </select>
+        <?php if ($filterType !== 'blog'): ?>
+            <select name="subject" onchange="this.form.submit()">
+                <option value="">All Subjects</option>
+                <?php foreach ($subjects as $s): ?>
+                    <option value="<?= htmlspecialchars($s) ?>" <?= $filterSubject === $s ? 'selected' : '' ?>><?= htmlspecialchars($s) ?></option>
+                <?php endforeach; ?>
+            </select>
+        <?php endif; ?>
 
         <?php if ($filterType !== '' || $filterAuthor !== '' || $filterSubject !== '' || $searchQuery !== ''): ?>
             <a href="dashboard.php" class="button-secondary">Clear</a>
