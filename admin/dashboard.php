@@ -20,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_quiz_id'])) {
 
 $filterType = $_GET['type'] ?? '';
 $filterAuthor = $_GET['author'] ?? '';
+$filterSubject = $_GET['subject'] ?? '';
 $searchQuery = trim($_GET['q'] ?? '');
 
 $conditions = [];
@@ -32,6 +33,10 @@ if ($filterType !== '') {
 if ($filterAuthor !== '') {
     $conditions[] = 'posts.created_by = ?';
     $params[] = $filterAuthor;
+}
+if ($filterSubject !== '') {
+    $conditions[] = 'posts.subject = ?';
+    $params[] = $filterSubject;
 }
 if ($searchQuery !== '') {
     $conditions[] = 'posts.title LIKE ?';
@@ -53,6 +58,9 @@ $posts = $stmt->fetchAll();
 
 // For the author dropdown — every admin who has ever posted
 $authors = $pdo->query("SELECT id, username FROM admins ORDER BY username ASC")->fetchAll();
+
+// For the subject dropdown — only subjects that actually have notes/solutions/question papers
+$subjects = $pdo->query("SELECT DISTINCT subject FROM posts WHERE subject IS NOT NULL ORDER BY subject ASC")->fetchAll(PDO::FETCH_COLUMN);
 
 $quizzesStmt = $pdo->query("
     SELECT quizzes.id, quizzes.title, quizzes.slug, quizzes.created_at,
@@ -101,7 +109,14 @@ require __DIR__ . '/../includes/header.php';
             <?php endforeach; ?>
         </select>
 
-        <?php if ($filterType !== '' || $filterAuthor !== '' || $searchQuery !== ''): ?>
+        <select name="subject" onchange="this.form.submit()">
+            <option value="">All Subjects</option>
+            <?php foreach ($subjects as $s): ?>
+                <option value="<?= htmlspecialchars($s) ?>" <?= $filterSubject === $s ? 'selected' : '' ?>><?= htmlspecialchars($s) ?></option>
+            <?php endforeach; ?>
+        </select>
+
+        <?php if ($filterType !== '' || $filterAuthor !== '' || $filterSubject !== '' || $searchQuery !== ''): ?>
             <a href="dashboard.php" class="button-secondary">Clear</a>
         <?php endif; ?>
     </form>
