@@ -60,7 +60,6 @@
             <a href="/blog" class="nav-tab nav-tab--blog">Blog</a>
             <?php if (isLoggedIn()): ?>
                 <a href="/admin/dashboard.php" class="nav-link">Dashboard</a>
-                <a href="/admin/quizzes.php" class="nav-link">Manage Quizzes</a>
                 <a href="/admin/logout.php" class="nav-link">Logout</a>
             <?php endif; ?>
         </nav>

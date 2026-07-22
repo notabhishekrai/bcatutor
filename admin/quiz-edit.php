@@ -8,7 +8,7 @@ $stmt->execute([$id]);
 $quiz = $stmt->fetch();
 
 if (!$quiz) {
-    header('Location: quizzes.php');
+    header('Location: dashboard.php?tab=quizzes');
     exit;
 }
 
@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $pdo->commit();
 
-            header('Location: quizzes.php');
+            header('Location: dashboard.php?tab=quizzes');
             exit;
         }
     }
@@ -157,7 +157,7 @@ require __DIR__ . '/../includes/header.php';
 
     <div class="form-actions">
         <button type="submit">Save Changes</button>
-        <a href="quizzes.php" class="button-secondary" id="cancel-link">Cancel</a>
+        <a href="dashboard.php?tab=quizzes" class="button-secondary" id="cancel-link">Cancel</a>
     </div>
 </form>
 

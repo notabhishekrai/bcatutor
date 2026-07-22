@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $pdo->commit();
 
-            header('Location: quizzes.php');
+            header('Location: dashboard.php?tab=quizzes');
             exit;
         }
     }
@@ -113,7 +113,7 @@ require __DIR__ . '/../includes/header.php';
 
     <div class="form-actions">
         <button type="submit">Publish Quiz</button>
-        <a href="quizzes.php" class="button-secondary" id="cancel-link">Cancel</a>
+        <a href="dashboard.php?tab=quizzes" class="button-secondary" id="cancel-link">Cancel</a>
     </div>
 </form>
 
