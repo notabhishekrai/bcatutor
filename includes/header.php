@@ -51,8 +51,8 @@
         </button>
         <nav id="siteNav" class="site-nav">
             <a href="/semesters" class="nav-tab nav-tab--notes">Browse Semesters</a>
+            <a href="/quizzes" class="nav-tab nav-tab--quiz">BCA Entrance</a>
             <a href="/blog" class="nav-tab nav-tab--blog">Blog</a>
-            <a href="/quizzes" class="nav-tab nav-tab--quiz">Quizzes</a>
             <?php if (isLoggedIn()): ?>
                 <a href="/admin/dashboard.php" class="nav-link">Dashboard</a>
                 <a href="/admin/quizzes.php" class="nav-link">Manage Quizzes</a>
