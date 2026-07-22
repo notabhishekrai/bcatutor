@@ -127,11 +127,23 @@ require __DIR__ . '/../includes/header.php';
     var Size = Quill.import('attributors/style/size');
     Size.whitelist = ['10px', '12px', '13px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px'];
     Quill.register(Size, true);
-    
-    
+
+    Quill.register({ 'modules/better-table': QuillBetterTable }, true);
+
     var quill = new Quill('#editor', {
         theme: 'snow',
         modules: {
+            table: false, // native Quill table format is disabled — better-table replaces it
+            'better-table': {
+                operationMenu: {
+                    items: {
+                        unmergeCells: { text: 'Unmerge cells' }
+                    }
+                }
+            },
+            keyboard: {
+                bindings: QuillBetterTable.keyboardBindings
+            },
             toolbar: [
                 [{ header: [2, 3, 4, 5, 6, false] }],
                 [{ size: Size.whitelist }],
@@ -142,6 +154,14 @@ require __DIR__ . '/../includes/header.php';
                 ['clean'],
             ]
         }
+    });
+
+    // Insert table — prompts for size, same pattern as the image alt-text prompt below
+    document.getElementById('insert-table-btn').addEventListener('click', function () {
+        var rows = parseInt(prompt('Number of rows?', '3'), 10);
+        var cols = parseInt(prompt('Number of columns?', '3'), 10);
+        if (!rows || !cols || rows < 1 || cols < 1) return;
+        quill.getModule('better-table').insertTable(rows, cols);
     });
     
     
