@@ -18,10 +18,10 @@ Header set Referrer-Policy "strict-origin-when-cross-origin"
 
 # If someone visits the old .php URL directly, permanently redirect
 # to the clean version — preserves SEO value already earned on these pages
-RewriteCond %{THE_REQUEST} \s/+(index|about|contact|privacy|blog|semesters)\.php[\s?] [NC]
+RewriteCond %{THE_REQUEST} \s/+(index|about|contact|privacy|blog|semesters|quizzes)\.php[\s?] [NC]
 RewriteRule ^ /%1 [R=301,L]
 
 # Internally serve the actual .php file when the clean URL is requested,
 # without changing what the browser shows
-RewriteRule ^(about|contact|privacy|blog|semesters)/?$ $1.php [L]
+RewriteRule ^(about|contact|privacy|blog|semesters|quizzes)/?$ $1.php [L]
 RewriteRule ^$ index.php [L]
