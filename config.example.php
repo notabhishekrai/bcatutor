@@ -90,6 +90,8 @@ function sanitizeHtml($html) {
     $allowedAttributes = [
         'a' => ['href'],
         'img' => ['src', 'alt'],
+        'td' => ['colspan', 'rowspan'],
+        'th' => ['colspan', 'rowspan'],
     ];
 
     $dom = new DOMDocument();
@@ -112,6 +114,9 @@ function sanitizeHtml($html) {
                 continue;
             }
             if (in_array($name, ['href', 'src'], true) && preg_match('/^\s*(javascript|data|vbscript):/i', $attr->nodeValue)) {
+                $toRemove[] = $attr->nodeName;
+            }
+            if (in_array($name, ['colspan', 'rowspan'], true) && !ctype_digit($attr->nodeValue)) {
                 $toRemove[] = $attr->nodeName;
             }
         }

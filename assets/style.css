@@ -715,6 +715,20 @@ html { scroll-behavior: smooth; }
     overflow-x: auto;
     white-space: nowrap;
     max-width: 100%;
+    border-collapse: collapse;
+}
+
+.post-content table td,
+.post-content table th {
+    border: 1px solid var(--line);
+    padding: 8px 12px;
+    white-space: normal;
+}
+
+.post-content table th {
+    background: var(--paper-card);
+    font-weight: 600;
+    text-align: left;
 }
 
 .post-content pre {
