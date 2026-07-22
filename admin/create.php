@@ -111,6 +111,7 @@ require __DIR__ . '/../includes/header.php';
 
     <div class="admin-field">
         <span class="admin-field-label">Content</span>
+        <button type="button" id="insert-table-btn" class="button-secondary">+ Insert Table</button>
         <div id="editor" style="background:#fff; min-height:300px; max-height:500px; overflow-y:auto;"></div>
         <textarea name="content" id="content-input" style="display:none;"><?= htmlspecialchars($_POST['content'] ?? '') ?></textarea>
     </div>
