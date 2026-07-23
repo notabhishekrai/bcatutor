@@ -71,6 +71,10 @@ $optionLabels = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
 
 <h1><?= htmlspecialchars($quiz['title']) ?></h1>
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+
 <?php if (!empty($quiz['description']) && !$submitted): ?>
     <p class="subject-meta"><?= htmlspecialchars($quiz['description']) ?></p>
 <?php endif; ?>
@@ -195,5 +199,17 @@ $optionLabels = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
     </form>
 
 <?php endif; ?>
+
+<script>
+    if (window.renderMathInElement) {
+        renderMathInElement(document.body, {
+            delimiters: [
+                { left: '$$', right: '$$', display: true },
+                { left: '$', right: '$', display: false }
+            ],
+            throwOnError: false
+        });
+    }
+</script>
 
 <?php require __DIR__ . '/includes/footer.php'; ?>

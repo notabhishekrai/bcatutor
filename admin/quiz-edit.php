@@ -137,6 +137,10 @@ require __DIR__ . '/../includes/header.php';
 
 <h1>Edit Quiz</h1>
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+
 <?php if ($error): ?>
     <p class="error"><?= htmlspecialchars($error) ?></p>
 <?php endif; ?>
@@ -159,6 +163,16 @@ require __DIR__ . '/../includes/header.php';
 
     <div class="admin-field">
         <span class="admin-field-label">Questions</span>
+        <div class="math-toolbar">
+            <span class="math-toolbar-label">Insert math (click a question/option field first, then a symbol):</span>
+            <button type="button" class="math-btn" data-before="$\frac{a}{b}$" data-after="">Fraction</button>
+            <button type="button" class="math-btn" data-before="$x^{2}$" data-after="">Exponent</button>
+            <button type="button" class="math-btn" data-before="$x_{1}$" data-after="">Subscript</button>
+            <button type="button" class="math-btn" data-before="$\sqrt{x}$" data-after="">&radic; Surd</button>
+            <button type="button" class="math-btn" data-before="$\sqrt[n]{x}$" data-after="">&#8319;&radic; Root</button>
+            <button type="button" class="math-btn" data-before="$\begin{bmatrix} a & b \\ c & d \end{bmatrix}$" data-after="">Matrix</button>
+            <button type="button" class="math-btn" id="math-wrap-btn">$...$ Equation</button>
+        </div>
         <div id="questions-wrap"></div>
         <button type="button" id="add-question-btn" class="button-secondary">+ Add Question</button>
     </div>
@@ -186,6 +200,7 @@ function addQuestionBlock(data) {
         <label>Question text
             <textarea name="question_text[${idx}]" rows="2" required>${data.text ? escapeHtml(data.text) : ''}</textarea>
         </label>
+        <div class="math-preview" data-preview="text"></div>
         <div class="quiz-image-field">
             <input type="hidden" name="question_image[${idx}]" value="${data.image ? escapeHtml(data.image) : ''}">
             <div class="quiz-image-preview" style="${data.image ? '' : 'display:none;'}">
@@ -214,7 +229,8 @@ function addQuestionBlock(data) {
             <input type="radio" name="correct_option[${idx}]" value="d" ${data.correct === 'd' ? 'checked' : ''}>
             <input type="text" name="option_d[${idx}]" value="${data.d ? escapeHtml(data.d) : ''}" placeholder="Option D">
         </div>
-        <p class="field-hint">Select the radio button next to the correct option.</p>
+        <div class="math-preview" data-preview="options"></div>
+        <p class="field-hint">Select the radio button next to the correct option. Wrap math in $...$, e.g. $\\frac{1}{2}$</p>
     `;
     block.querySelector('.remove-question-btn').addEventListener('click', function () {
         block.remove();
@@ -259,6 +275,51 @@ function addQuestionBlock(data) {
         imageInput.value = '';
     });
 
+    // Live math preview — question text and the 4 options each get re-rendered on input
+    var textField = block.querySelector('textarea[name^="question_text"]');
+    var textPreview = block.querySelector('[data-preview="text"]');
+    var optionsPreview = block.querySelector('[data-preview="options"]');
+    var optionFields = {
+        a: block.querySelector('input[name^="option_a"]'),
+        b: block.querySelector('input[name^="option_b"]'),
+        c: block.querySelector('input[name^="option_c"]'),
+        d: block.querySelector('input[name^="option_d"]')
+    };
+
+    function renderMathPreview(el, text) {
+        el.textContent = text;
+        if (text.trim() && window.renderMathInElement) {
+            renderMathInElement(el, {
+                delimiters: [
+                    { left: '$$', right: '$$', display: true },
+                    { left: '$', right: '$', display: false }
+                ],
+                throwOnError: false
+            });
+        }
+    }
+
+    function updateTextPreview() { renderMathPreview(textPreview, textField.value); }
+
+    function updateOptionsPreview() {
+        optionsPreview.innerHTML = '';
+        ['a', 'b', 'c', 'd'].forEach(function (letter) {
+            var val = optionFields[letter].value;
+            if (!val.trim()) return;
+            var line = document.createElement('div');
+            line.className = 'math-preview-line';
+            optionsPreview.appendChild(line);
+            renderMathPreview(line, letter.toUpperCase() + '. ' + val);
+        });
+    }
+
+    textField.addEventListener('input', updateTextPreview);
+    ['a', 'b', 'c', 'd'].forEach(function (letter) {
+        optionFields[letter].addEventListener('input', updateOptionsPreview);
+    });
+    updateTextPreview();
+    updateOptionsPreview();
+
     wrap.appendChild(block);
 }
 
@@ -284,6 +345,40 @@ if (existingQuestions.length > 0) {
 } else {
     addQuestionBlock();
 }
+
+// Math toolbar — inserts a LaTeX snippet into whichever question/option field was last focused
+let lastFocusedField = null;
+document.addEventListener('focusin', function (e) {
+    if (e.target.matches('.quiz-question-builder textarea, .quiz-question-builder input[type="text"]')) {
+        lastFocusedField = e.target;
+    }
+});
+
+function insertAtCursor(field, before, after) {
+    if (!field) {
+        alert('Click into a question or option field first, then choose a symbol to insert.');
+        return;
+    }
+    var start = field.selectionStart;
+    var end = field.selectionEnd;
+    var value = field.value;
+    var selected = value.slice(start, end);
+    field.value = value.slice(0, start) + before + selected + after + value.slice(end);
+    var cursorPos = start + before.length + selected.length + after.length;
+    field.focus();
+    field.setSelectionRange(cursorPos, cursorPos);
+    field.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+document.querySelectorAll('.math-btn[data-before]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        insertAtCursor(lastFocusedField, btn.dataset.before, btn.dataset.after || '');
+    });
+});
+
+document.getElementById('math-wrap-btn').addEventListener('click', function () {
+    insertAtCursor(lastFocusedField, '$', '$');
+});
 
 // slug preview
 var slugInput = document.getElementById('slug-input');
