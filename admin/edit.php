@@ -151,7 +151,7 @@ $currentMetaDescription = $_POST['meta_description'] ?? $post['meta_description'
     Size.whitelist = ['10px', '12px', '13px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px'];
     Quill.register(Size, true);
 
-    Quill.register({ 'modules/better-table': QuillBetterTable }, true);
+    Quill.register({ 'modules/better-table': quillBetterTable }, true);
 
     var quill = new Quill('#editor', {
         theme: 'snow',
@@ -165,7 +165,7 @@ $currentMetaDescription = $_POST['meta_description'] ?? $post['meta_description'
                 }
             },
             keyboard: {
-                bindings: QuillBetterTable.keyboardBindings
+                bindings: quillBetterTable.keyboardBindings
             },
             toolbar: [
                 [{ header: [2, 3, 4, 5, 6, false] }],
