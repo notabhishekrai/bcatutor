@@ -91,3 +91,12 @@ CREATE TABLE quiz_leaderboard (
     FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE,
     FOREIGN KEY (player_id) REFERENCES players(player_id) ON DELETE CASCADE
 );
+
+-- Throttles leaderboard submissions to one per IP every 5 seconds (see
+-- take-quiz.php) so a script can't flood players/quiz_leaderboard with fake
+-- entries just by not sending a player_id cookie. Stores a hash, not the raw
+-- IP. This is also a brand new table — run this CREATE TABLE too.
+CREATE TABLE leaderboard_rate_limit (
+    ip_hash CHAR(64) PRIMARY KEY,
+    last_submitted_at DATETIME NOT NULL
+);

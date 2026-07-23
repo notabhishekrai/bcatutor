@@ -71,29 +71,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Optional leaderboard submission — no login, just a nickname tied to a
     // cookie-based player ID. Score/total come from the server-side check
     // above, never from client input, so there's nothing to trust here.
-    $nickname = trim(preg_replace('/\s+/', ' ', $_POST['nickname'] ?? ''));
+    //
+    // Strip control chars and Unicode "Format" chars (zero-width spaces,
+    // bidi overrides/isolates, BOM, etc.) before anything else — left in,
+    // they'd render invisibly or reorder text, letting a nickname visually
+    // spoof another entry on the public leaderboard. preg_replace with /u
+    // returns null on invalid UTF-8 input, which we treat as "no nickname".
+    $nickname = preg_replace('/[\p{Cc}\p{Cf}]/u', '', $_POST['nickname'] ?? '');
+    $nickname = $nickname === null ? '' : trim(preg_replace('/\s+/u', ' ', $nickname));
+
     if ($nickname !== '' && $total > 0) {
         $nickname = mb_substr($nickname, 0, 40);
-        $storedPercent = round(($score / $total) * 100, 2);
-        $playerId = getPlayerId(true);
 
-        $pdo->prepare("INSERT INTO players (player_id, nickname) VALUES (?, ?) ON DUPLICATE KEY UPDATE nickname = ?")
-            ->execute([$playerId, $nickname, $nickname]);
+        // Rate limit: one leaderboard-affecting submission per IP every 5
+        // seconds. This is keyed off the IP, not the player_id cookie —
+        // a scripted flood simply won't send that cookie, so the cookie
+        // alone can't stop it from minting endless fake players/scores.
+        $ipHash = hash('sha256', $_SERVER['REMOTE_ADDR'] ?? '');
+        $rateStmt = $pdo->prepare("SELECT last_submitted_at FROM leaderboard_rate_limit WHERE ip_hash = ?");
+        $rateStmt->execute([$ipHash]);
+        $lastSubmittedAt = $rateStmt->fetchColumn();
 
-        $existing = $pdo->prepare("SELECT percent FROM quiz_leaderboard WHERE quiz_id = ? AND player_id = ?");
-        $existing->execute([$quiz['id'], $playerId]);
-        $existingPercent = $existing->fetchColumn();
-
-        if ($existingPercent === false) {
-            $pdo->prepare("INSERT INTO quiz_leaderboard (quiz_id, player_id, score, total, percent) VALUES (?, ?, ?, ?, ?)")
-                ->execute([$quiz['id'], $playerId, $score, $total, $storedPercent]);
-            $leaderboardStatus = 'saved';
-        } elseif ($storedPercent > (float)$existingPercent) {
-            $pdo->prepare("UPDATE quiz_leaderboard SET score = ?, total = ?, percent = ? WHERE quiz_id = ? AND player_id = ?")
-                ->execute([$score, $total, $storedPercent, $quiz['id'], $playerId]);
-            $leaderboardStatus = 'saved';
+        if ($lastSubmittedAt !== false && (time() - strtotime($lastSubmittedAt)) < 5) {
+            $leaderboardStatus = 'rate_limited';
         } else {
-            $leaderboardStatus = 'not_improved';
+            $pdo->prepare("INSERT INTO leaderboard_rate_limit (ip_hash, last_submitted_at) VALUES (?, NOW()) ON DUPLICATE KEY UPDATE last_submitted_at = NOW()")
+                ->execute([$ipHash]);
+
+            $storedPercent = round(($score / $total) * 100, 2);
+            $playerId = getPlayerId(true);
+
+            $pdo->prepare("INSERT INTO players (player_id, nickname) VALUES (?, ?) ON DUPLICATE KEY UPDATE nickname = ?")
+                ->execute([$playerId, $nickname, $nickname]);
+
+            // Single atomic upsert instead of SELECT-then-INSERT/UPDATE — the
+            // old check-then-act version raced under a double-submit (two
+            // requests both seeing "no existing row" and both trying to
+            // INSERT) and could throw on the UNIQUE KEY(quiz_id, player_id)
+            // constraint. This keeps the best (highest percent) score in one
+            // atomic statement, so there's nothing to race.
+            $stmt = $pdo->prepare("
+                INSERT INTO quiz_leaderboard (quiz_id, player_id, score, total, percent)
+                VALUES (?, ?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE
+                    score = IF(VALUES(percent) > percent, VALUES(score), score),
+                    total = IF(VALUES(percent) > percent, VALUES(total), total),
+                    percent = IF(VALUES(percent) > percent, VALUES(percent), percent)
+            ");
+            $stmt->execute([$quiz['id'], $playerId, $score, $total, $storedPercent]);
+
+            // MySQL/MariaDB report affected-rows as 1 for a fresh insert, 2 for
+            // an update that changed a value, and 0 if ON DUPLICATE KEY UPDATE
+            // left every column as it was — a reliable "did this improve?" signal
+            // without a separate SELECT.
+            $leaderboardStatus = $stmt->rowCount() > 0 ? 'saved' : 'not_improved';
         }
     }
 }
@@ -134,6 +165,8 @@ $optionLabels = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
             <p class="field-hint no-print">Saved to the leaderboard as "<?= htmlspecialchars($nickname) ?>".</p>
         <?php elseif ($leaderboardStatus === 'not_improved'): ?>
             <p class="field-hint no-print">Your previous best on this quiz is still higher — leaderboard unchanged.</p>
+        <?php elseif ($leaderboardStatus === 'rate_limited'): ?>
+            <p class="field-hint no-print">Please wait a few seconds before submitting to the leaderboard again.</p>
         <?php endif; ?>
         <div class="quiz-result-actions no-print">
             <button type="button" id="print-results-btn" class="button">Print / Save as PDF</button>
