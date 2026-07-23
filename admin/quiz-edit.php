@@ -167,10 +167,12 @@ require __DIR__ . '/../includes/header.php';
             <span class="math-toolbar-label">Insert math (click a question/option field first, then a symbol):</span>
             <button type="button" class="math-btn" data-before="$\frac{a}{b}$" data-after="">Fraction</button>
             <button type="button" class="math-btn" data-before="$x^{2}$" data-after="">Exponent</button>
+            <button type="button" class="math-btn" data-before="$a^{n}$" data-after="">Superscript</button>
             <button type="button" class="math-btn" data-before="$x_{1}$" data-after="">Subscript</button>
             <button type="button" class="math-btn" data-before="$\sqrt{x}$" data-after="">&radic; Surd</button>
             <button type="button" class="math-btn" data-before="$\sqrt[n]{x}$" data-after="">&#8319;&radic; Root</button>
             <button type="button" class="math-btn" data-before="$\begin{bmatrix} a & b \\ c & d \end{bmatrix}$" data-after="">Matrix</button>
+            <button type="button" class="math-btn" data-before="$\sum_{i=1}^{n}$" data-after="">&sum; Summation</button>
             <button type="button" class="math-btn" id="math-wrap-btn">$...$ Equation</button>
         </div>
         <div id="questions-wrap"></div>
