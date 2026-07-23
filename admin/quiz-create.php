@@ -127,7 +127,6 @@ require __DIR__ . '/../includes/header.php';
             <button type="button" class="math-btn" data-before="$\sqrt[n]{x}$" data-after="">&#8319;&radic; Root</button>
             <button type="button" class="math-btn" data-before="$\begin{bmatrix} a & b \\ c & d \end{bmatrix}$" data-after="">Matrix</button>
             <button type="button" class="math-btn" data-before="$\sum_{i=1}^{n}$" data-after="">&sum; Summation</button>
-            <button type="button" class="math-btn" id="math-wrap-btn">$...$ Equation</button>
         </div>
         <div id="questions-wrap"></div>
         <button type="button" id="add-question-btn" class="button-secondary">+ Add Question</button>
@@ -323,10 +322,6 @@ document.querySelectorAll('.math-btn[data-before]').forEach(function (btn) {
     btn.addEventListener('click', function () {
         insertAtCursor(lastFocusedField, btn.dataset.before, btn.dataset.after || '');
     });
-});
-
-document.getElementById('math-wrap-btn').addEventListener('click', function () {
-    insertAtCursor(lastFocusedField, '$', '$');
 });
 
 <?php if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['question_text'])): ?>
