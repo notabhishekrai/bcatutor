@@ -94,6 +94,9 @@ $optionLabels = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
     foreach ($results as $i => $r) {
         $q = $r['question'];
         $lines[] = ($i + 1) . '. ' . $q['question_text'];
+        if (!empty($q['question_image'])) {
+            $lines[] = '   [Image: ' . $q['question_image'] . ']';
+        }
         foreach (['a', 'b', 'c', 'd'] as $letter) {
             $marker = '   ';
             if ($letter === $q['correct_option']) {
@@ -125,6 +128,9 @@ $optionLabels = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
         <div class="quiz-question">
             <div class="quiz-question-num">Question <?= $i + 1 ?> of <?= $total ?></div>
             <p class="quiz-question-text"><?= htmlspecialchars($q['question_text']) ?></p>
+            <?php if (!empty($q['question_image'])): ?>
+                <img class="quiz-question-image" src="<?= htmlspecialchars($q['question_image']) ?>" alt="">
+            <?php endif; ?>
             <div class="quiz-options">
                 <?php foreach (['a', 'b', 'c', 'd'] as $letter): ?>
                     <?php
@@ -169,6 +175,9 @@ $optionLabels = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
             <div class="quiz-question">
                 <div class="quiz-question-num">Question <?= $i + 1 ?> of <?= count($questions) ?></div>
                 <p class="quiz-question-text"><?= htmlspecialchars($q['question_text']) ?></p>
+                <?php if (!empty($q['question_image'])): ?>
+                    <img class="quiz-question-image" src="<?= htmlspecialchars($q['question_image']) ?>" alt="">
+                <?php endif; ?>
                 <div class="quiz-options">
                     <?php foreach (['a', 'b', 'c', 'd'] as $letter): ?>
                         <label class="quiz-option">

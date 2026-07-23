@@ -46,6 +46,7 @@ CREATE TABLE quiz_questions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     quiz_id INT NOT NULL,
     question_text TEXT NOT NULL,
+    question_image VARCHAR(255) NULL,
     option_a VARCHAR(500) NOT NULL,
     option_b VARCHAR(500) NOT NULL,
     option_c VARCHAR(500) NOT NULL,
@@ -54,3 +55,7 @@ CREATE TABLE quiz_questions (
     sort_order INT NOT NULL DEFAULT 0,
     FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE
 );
+
+-- If you already ran the quiz_questions CREATE TABLE above before this column
+-- existed, run this instead to add image support to an existing database:
+-- ALTER TABLE quiz_questions ADD COLUMN question_image VARCHAR(255) NULL AFTER question_text;

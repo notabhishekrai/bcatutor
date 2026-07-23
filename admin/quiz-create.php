@@ -16,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $questionTexts = $_POST['question_text'] ?? [];
+    $questionImages = $_POST['question_image'] ?? [];
     $optionA = $_POST['option_a'] ?? [];
     $optionB = $_POST['option_b'] ?? [];
     $optionC = $_POST['option_c'] ?? [];
@@ -26,6 +27,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $questions = [];
     foreach ($questionTexts as $idx => $text) {
         $text = trim($text);
+        $image = trim($questionImages[$idx] ?? '');
+        // Only ever trust images that came from our own uploader
+        if ($image !== '' && strpos($image, '/uploads/') !== 0) {
+            $image = '';
+        }
         $a = trim($optionA[$idx] ?? '');
         $b = trim($optionB[$idx] ?? '');
         $c = trim($optionC[$idx] ?? '');
@@ -33,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $correct = $correctOption[$idx] ?? '';
 
         // A completely empty block (never filled in) is silently skipped
-        if ($text === '' && $a === '' && $b === '' && $c === '' && $d === '') {
+        if ($text === '' && $a === '' && $b === '' && $c === '' && $d === '' && $image === '') {
             continue;
         }
 
@@ -42,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             break;
         }
 
-        $questions[] = [$text, $a, $b, $c, $d, $correct];
+        $questions[] = [$text, $image, $a, $b, $c, $d, $correct];
     }
 
     if ($title === '') {
@@ -65,9 +71,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$title, $slug, $description, $_SESSION['admin_id']]);
             $quizId = $pdo->lastInsertId();
 
-            $qStmt = $pdo->prepare("INSERT INTO quiz_questions (quiz_id, question_text, option_a, option_b, option_c, option_d, correct_option, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            $qStmt = $pdo->prepare("INSERT INTO quiz_questions (quiz_id, question_text, question_image, option_a, option_b, option_c, option_d, correct_option, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
             foreach ($questions as $order => $q) {
-                $qStmt->execute([$quizId, $q[0], $q[1], $q[2], $q[3], $q[4], $q[5], $order]);
+                $qStmt->execute([$quizId, $q[0], $q[1] !== '' ? $q[1] : null, $q[2], $q[3], $q[4], $q[5], $q[6], $order]);
             }
 
             $pdo->commit();
@@ -134,6 +140,14 @@ function addQuestionBlock(data) {
         <label>Question text
             <textarea name="question_text[${idx}]" rows="2" required>${data.text ? escapeHtml(data.text) : ''}</textarea>
         </label>
+        <div class="quiz-image-field">
+            <input type="hidden" name="question_image[${idx}]" value="${data.image ? escapeHtml(data.image) : ''}">
+            <div class="quiz-image-preview" style="${data.image ? '' : 'display:none;'}">
+                <img src="${data.image ? escapeHtml(data.image) : ''}" alt="">
+                <button type="button" class="link-button remove-image-btn">Remove image</button>
+            </div>
+            <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" class="question-image-input" style="${data.image ? 'display:none;' : ''}">
+        </div>
         <div class="quiz-option-row">
             <span class="quiz-option-row-label">A</span>
             <input type="radio" name="correct_option[${idx}]" value="a" ${data.correct === 'a' ? 'checked' : ''} required>
@@ -160,6 +174,45 @@ function addQuestionBlock(data) {
         block.remove();
         renumberQuestions();
     });
+
+    var hiddenImage = block.querySelector('input[name="question_image[' + idx + ']"]');
+    var imagePreview = block.querySelector('.quiz-image-preview');
+    var previewImg = imagePreview.querySelector('img');
+    var imageInput = block.querySelector('.question-image-input');
+
+    imageInput.addEventListener('change', function () {
+        var file = imageInput.files[0];
+        if (!file) return;
+
+        var formData = new FormData();
+        formData.append('image', file);
+        formData.append('csrf_token', document.querySelector('input[name="csrf_token"]').value);
+
+        fetch('upload-image.php', { method: 'POST', body: formData })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                if (data.url) {
+                    hiddenImage.value = data.url;
+                    previewImg.src = data.url;
+                    imagePreview.style.display = '';
+                    imageInput.style.display = 'none';
+                } else {
+                    alert(data.error || 'Upload failed.');
+                }
+            })
+            .catch(function () {
+                alert('Upload failed — check your connection and try again.');
+            });
+    });
+
+    block.querySelector('.remove-image-btn').addEventListener('click', function () {
+        hiddenImage.value = '';
+        previewImg.src = '';
+        imagePreview.style.display = 'none';
+        imageInput.style.display = '';
+        imageInput.value = '';
+    });
+
     wrap.appendChild(block);
 }
 
@@ -184,6 +237,7 @@ document.getElementById('add-question-btn').addEventListener('click', function (
     const existingQuestions = <?= json_encode(array_map(function ($idx) {
         return [
             'text' => $_POST['question_text'][$idx] ?? '',
+            'image' => $_POST['question_image'][$idx] ?? '',
             'a' => $_POST['option_a'][$idx] ?? '',
             'b' => $_POST['option_b'][$idx] ?? '',
             'c' => $_POST['option_c'][$idx] ?? '',
