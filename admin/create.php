@@ -60,8 +60,6 @@ require __DIR__ . '/../includes/header.php';
 
 <link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.6/quill.snow.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.6/quill.min.js"></script>
-<link href="https://cdn.jsdelivr.net/npm/quill-better-table@1.2.10/dist/quill-better-table.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/quill-better-table@1.2.10/dist/quill-better-table.js"></script>
 
 <?php if ($error): ?>
     <p class="error"><?= htmlspecialchars($error) ?></p>
@@ -111,7 +109,6 @@ require __DIR__ . '/../includes/header.php';
 
     <div class="admin-field">
         <span class="admin-field-label">Content</span>
-        <button type="button" id="insert-table-btn" class="button-secondary">+ Insert Table</button>
         <div id="editor" style="background:#fff; min-height:300px; max-height:500px; overflow-y:auto;"></div>
         <textarea name="content" id="content-input" style="display:none;"><?= htmlspecialchars($_POST['content'] ?? '') ?></textarea>
     </div>
@@ -128,22 +125,9 @@ require __DIR__ . '/../includes/header.php';
     Size.whitelist = ['10px', '12px', '13px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px'];
     Quill.register(Size, true);
 
-    Quill.register({ 'modules/better-table': quillBetterTable }, true);
-
     var quill = new Quill('#editor', {
         theme: 'snow',
         modules: {
-            table: false, // native Quill table format is disabled — better-table replaces it
-            'better-table': {
-                operationMenu: {
-                    items: {
-                        unmergeCells: { text: 'Unmerge cells' }
-                    }
-                }
-            },
-            keyboard: {
-                bindings: quillBetterTable.keyboardBindings
-            },
             toolbar: [
                 [{ header: [2, 3, 4, 5, 6, false] }],
                 [{ size: Size.whitelist }],
@@ -156,15 +140,7 @@ require __DIR__ . '/../includes/header.php';
         }
     });
 
-    // Insert table — prompts for size, same pattern as the image alt-text prompt below
-    document.getElementById('insert-table-btn').addEventListener('click', function () {
-        var rows = parseInt(prompt('Number of rows?', '3'), 10);
-        var cols = parseInt(prompt('Number of columns?', '3'), 10);
-        if (!rows || !cols || rows < 1 || cols < 1) return;
-        quill.getModule('better-table').insertTable(rows, cols);
-    });
-    
-    
+
     // custom slug 
     var titleInput = document.querySelector('input[name="title"]');
 var slugInput = document.getElementById('slug-input');
