@@ -1048,7 +1048,7 @@ html { scroll-behavior: smooth; }
 /* ---- Quiz results: Print / Save as PDF ---- */
 .scroll-top-btn {
     position: fixed;
-    bottom: 60px;
+    bottom: 40%;
     right: 24px;
     width: 44px;
     height: 44px;
