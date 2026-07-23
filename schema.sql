@@ -66,3 +66,28 @@ CREATE TABLE quiz_questions (
 -- If you already ran the quiz_questions CREATE TABLE above before this column
 -- existed, run this instead to add image support to an existing database:
 -- ALTER TABLE quiz_questions ADD COLUMN question_image VARCHAR(255) NULL AFTER question_text;
+
+-- ---- Quiz leaderboard (no login required) ----
+-- Visitors are identified by a random ID stored in a browser cookie (see
+-- getPlayerId() in config.php), not an account. These are brand new tables —
+-- on an existing database just run both CREATE TABLE statements below.
+
+CREATE TABLE players (
+    player_id CHAR(32) PRIMARY KEY,
+    nickname VARCHAR(40) NOT NULL,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE quiz_leaderboard (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    quiz_id INT NOT NULL,
+    player_id CHAR(32) NOT NULL,
+    score INT NOT NULL,
+    total INT NOT NULL,
+    percent DECIMAL(5,2) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY quiz_player (quiz_id, player_id),
+    FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE,
+    FOREIGN KEY (player_id) REFERENCES players(player_id) ON DELETE CASCADE
+);

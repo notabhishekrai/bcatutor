@@ -17,6 +17,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_quiz_id'])) {
     header('Location: dashboard.php?tab=quizzes');
     exit;
 }
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_leaderboard_id'])) {
+    csrfCheck();
+    $stmt = $pdo->prepare("DELETE FROM quiz_leaderboard WHERE id = ?");
+    $stmt->execute([(int)$_POST['delete_leaderboard_id']]);
+    header('Location: dashboard.php?tab=leaderboard');
+    exit;
+}
 
 $filterType = $_GET['type'] ?? '';
 $filterAuthor = $_GET['author'] ?? '';
@@ -72,7 +79,17 @@ $quizzesStmt = $pdo->query("
 ");
 $quizzes = $quizzesStmt->fetchAll();
 
-$activeTab = ($_GET['tab'] ?? '') === 'quizzes' ? 'quizzes' : 'posts';
+$leaderboardStmt = $pdo->query("
+    SELECT quiz_leaderboard.id, quizzes.title AS quiz_title, players.nickname,
+           quiz_leaderboard.score, quiz_leaderboard.total, quiz_leaderboard.percent, quiz_leaderboard.updated_at
+    FROM quiz_leaderboard
+    JOIN quizzes ON quizzes.id = quiz_leaderboard.quiz_id
+    JOIN players ON players.player_id = quiz_leaderboard.player_id
+    ORDER BY quizzes.title ASC, quiz_leaderboard.percent DESC
+");
+$leaderboardEntries = $leaderboardStmt->fetchAll();
+
+$activeTab = in_array($_GET['tab'] ?? '', ['quizzes', 'leaderboard'], true) ? $_GET['tab'] : 'posts';
 
 $pageTitle = 'Dashboard';
 require __DIR__ . '/../includes/header.php';
@@ -86,6 +103,9 @@ require __DIR__ . '/../includes/header.php';
     </button>
     <button type="button" class="tab-btn <?= $activeTab === 'quizzes' ? 'is-active' : '' ?>" data-tab="quizzes" role="tab" aria-selected="<?= $activeTab === 'quizzes' ? 'true' : 'false' ?>">
         Quizzes <span class="tab-count"><?= count($quizzes) ?></span>
+    </button>
+    <button type="button" class="tab-btn <?= $activeTab === 'leaderboard' ? 'is-active' : '' ?>" data-tab="leaderboard" role="tab" aria-selected="<?= $activeTab === 'leaderboard' ? 'true' : 'false' ?>">
+        Leaderboard <span class="tab-count"><?= count($leaderboardEntries) ?></span>
     </button>
 </div>
 
@@ -184,6 +204,38 @@ require __DIR__ . '/../includes/header.php';
                 <?php endforeach; ?>
                 <?php if (empty($quizzes)): ?>
                     <tr><td colspan="5" class="empty-state">No quizzes yet.</td></tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="tab-panel" id="panel-leaderboard" <?= $activeTab === 'leaderboard' ? '' : 'hidden' ?>>
+    <p class="field-hint">Anyone can submit any nickname here since there's no login — use Delete to remove an offensive nickname or an obviously fake score.</p>
+    <div class="table-scroll">
+        <table class="admin-table">
+            <thead>
+                <tr><th>Quiz</th><th>Nickname</th><th>Score</th><th>%</th><th>Last Updated</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                <?php foreach ($leaderboardEntries as $entry): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($entry['quiz_title']) ?></td>
+                        <td><?= htmlspecialchars($entry['nickname']) ?></td>
+                        <td><?= (int)$entry['score'] ?> / <?= (int)$entry['total'] ?></td>
+                        <td><?= round((float)$entry['percent']) ?>%</td>
+                        <td><?= date('M j, Y', strtotime($entry['updated_at'])) ?></td>
+                        <td>
+                            <form method="POST" style="display:inline" onsubmit="return confirm('Remove this leaderboard entry?');">
+                                <input type="hidden" name="csrf_token" value="<?= csrfToken() ?>">
+                                <input type="hidden" name="delete_leaderboard_id" value="<?= $entry['id'] ?>">
+                                <button type="submit" class="link-button">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                <?php if (empty($leaderboardEntries)): ?>
+                    <tr><td colspan="6" class="empty-state">No leaderboard entries yet.</td></tr>
                 <?php endif; ?>
             </tbody>
         </table>

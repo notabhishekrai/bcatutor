@@ -158,3 +158,27 @@ function csrfCheck() {
         die('Invalid request (CSRF check failed). Go back and try again.');
     }
 }
+
+// ---- Anonymous leaderboard identity ----
+// No accounts/login for the quiz leaderboard — a visitor is identified by a
+// random ID kept in a long-lived cookie, only created the moment they choose
+// to appear on a leaderboard (not on every page view). Pass $create = false
+// to just read an existing ID (e.g. to prefill a nickname) without setting one.
+function getPlayerId($create = true) {
+    if (!empty($_COOKIE['player_id']) && preg_match('/^[a-f0-9]{32}$/', $_COOKIE['player_id'])) {
+        return $_COOKIE['player_id'];
+    }
+    if (!$create) {
+        return null;
+    }
+    $playerId = bin2hex(random_bytes(16));
+    setcookie('player_id', $playerId, [
+        'expires' => time() + 60 * 60 * 24 * 365,
+        'path' => '/',
+        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+    $_COOKIE['player_id'] = $playerId;
+    return $playerId;
+}

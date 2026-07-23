@@ -811,17 +811,35 @@ html { scroll-behavior: smooth; }
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.75rem;
     color: var(--muted);
-    margin-bottom: 18px;
+    margin-bottom: 0;
+}
+
+.quiz-card-link {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    width: 100%;
+    text-decoration: none;
+    color: inherit;
+}
+
+.quiz-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    margin-top: 22px;
 }
 
 .quiz-card-start {
-    margin-top: auto;
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.78rem;
     color: #9C3D8B;
     border: 1px solid var(--line);
     padding: 6px 16px;
     border-radius: 20px;
+    text-decoration: none;
     transition: background 0.15s, border-color 0.15s;
 }
 
@@ -829,6 +847,18 @@ html { scroll-behavior: smooth; }
     background: #9C3D8B;
     border-color: #9C3D8B;
     color: #fff;
+}
+
+.quiz-card-leaderboard {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-decoration: none;
+}
+
+.quiz-card-leaderboard:hover {
+    color: #9C3D8B;
+    text-decoration: underline;
 }
 
 .quiz-question {
@@ -944,6 +974,48 @@ html { scroll-behavior: smooth; }
     gap: 12px;
     justify-content: center;
     flex-wrap: wrap;
+}
+
+.quiz-nickname-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    max-width: 320px;
+}
+
+.quiz-nickname-field input {
+    padding: 10px 12px;
+    font-size: 1rem;
+    font-weight: 400;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-family: inherit;
+}
+
+.leaderboard-table th:first-child,
+.leaderboard-table td:first-child {
+    width: 48px;
+    text-align: center;
+    font-size: 1.05rem;
+}
+
+.leaderboard-row-you {
+    background: rgba(156, 61, 139, 0.08);
+}
+
+.leaderboard-you-tag {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 8px;
+    border-radius: 10px;
+    background: #9C3D8B;
+    color: #fff;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    vertical-align: middle;
 }
 
 .math-toolbar {

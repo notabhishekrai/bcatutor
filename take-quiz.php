@@ -30,10 +30,22 @@ if (!$quiz) {
 $qStmt = $pdo->prepare("SELECT * FROM quiz_questions WHERE quiz_id = ? ORDER BY sort_order ASC, id ASC");
 $qStmt->execute([$quiz['id']]);
 $questions = $qStmt->fetchAll();
+$total = count($questions);
+
+// Prefill the nickname field for a returning visitor without creating a
+// cookie/player row just for viewing the page — that only happens on submit.
+$existingNickname = '';
+$existingPlayerId = getPlayerId(false);
+if ($existingPlayerId) {
+    $nickStmt = $pdo->prepare("SELECT nickname FROM players WHERE player_id = ?");
+    $nickStmt->execute([$existingPlayerId]);
+    $existingNickname = $nickStmt->fetchColumn() ?: '';
+}
 
 $submitted = false;
 $score = 0;
 $results = [];
+$leaderboardStatus = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrfCheck();
@@ -55,6 +67,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ];
     }
     $submitted = true;
+
+    // Optional leaderboard submission — no login, just a nickname tied to a
+    // cookie-based player ID. Score/total come from the server-side check
+    // above, never from client input, so there's nothing to trust here.
+    $nickname = trim(preg_replace('/\s+/', ' ', $_POST['nickname'] ?? ''));
+    if ($nickname !== '' && $total > 0) {
+        $nickname = mb_substr($nickname, 0, 40);
+        $storedPercent = round(($score / $total) * 100, 2);
+        $playerId = getPlayerId(true);
+
+        $pdo->prepare("INSERT INTO players (player_id, nickname) VALUES (?, ?) ON DUPLICATE KEY UPDATE nickname = ?")
+            ->execute([$playerId, $nickname, $nickname]);
+
+        $existing = $pdo->prepare("SELECT percent FROM quiz_leaderboard WHERE quiz_id = ? AND player_id = ?");
+        $existing->execute([$quiz['id'], $playerId]);
+        $existingPercent = $existing->fetchColumn();
+
+        if ($existingPercent === false) {
+            $pdo->prepare("INSERT INTO quiz_leaderboard (quiz_id, player_id, score, total, percent) VALUES (?, ?, ?, ?, ?)")
+                ->execute([$quiz['id'], $playerId, $score, $total, $storedPercent]);
+            $leaderboardStatus = 'saved';
+        } elseif ($storedPercent > (float)$existingPercent) {
+            $pdo->prepare("UPDATE quiz_leaderboard SET score = ?, total = ?, percent = ? WHERE quiz_id = ? AND player_id = ?")
+                ->execute([$score, $total, $storedPercent, $quiz['id'], $playerId]);
+            $leaderboardStatus = 'saved';
+        } else {
+            $leaderboardStatus = 'not_improved';
+        }
+    }
 }
 
 $pageTitle = $quiz['title'];
@@ -84,17 +125,20 @@ $optionLabels = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
 
 <?php elseif ($submitted): ?>
 
-    <?php
-    $total = count($questions);
-    $percent = $total > 0 ? round(($score / $total) * 100) : 0;
-    ?>
+    <?php $percent = $total > 0 ? round(($score / $total) * 100) : 0; ?>
 
     <div class="quiz-result-summary">
         <div class="quiz-result-score"><?= $score ?> / <?= $total ?></div>
         <div class="quiz-result-label"><?= $percent ?>% correct</div>
+        <?php if ($leaderboardStatus === 'saved'): ?>
+            <p class="field-hint no-print">Saved to the leaderboard as "<?= htmlspecialchars($nickname) ?>".</p>
+        <?php elseif ($leaderboardStatus === 'not_improved'): ?>
+            <p class="field-hint no-print">Your previous best on this quiz is still higher — leaderboard unchanged.</p>
+        <?php endif; ?>
         <div class="quiz-result-actions no-print">
             <button type="button" id="print-results-btn" class="button">Print / Save as PDF</button>
             <a href="take-quiz.php?slug=<?= urlencode($quiz['slug']) ?>" class="button-secondary">Retake Quiz</a>
+            <a href="leaderboard.php?slug=<?= urlencode($quiz['slug']) ?>" class="button-secondary">View Leaderboard</a>
         </div>
     </div>
 
@@ -134,6 +178,10 @@ $optionLabels = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
 
     <form method="POST">
         <input type="hidden" name="csrf_token" value="<?= csrfToken() ?>">
+
+        <label class="quiz-nickname-field">Nickname for the leaderboard (optional — leave blank to skip)
+            <input type="text" name="nickname" maxlength="40" placeholder="e.g. Alex" value="<?= htmlspecialchars($existingNickname) ?>">
+        </label>
 
         <?php foreach ($questions as $i => $q): ?>
             <div class="quiz-question">
