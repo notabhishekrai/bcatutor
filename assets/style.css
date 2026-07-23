@@ -766,8 +766,8 @@ html { scroll-behavior: smooth; }
 
 .quiz-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 28px;
     margin-top: 24px;
 }
 
@@ -777,7 +777,7 @@ html { scroll-behavior: smooth; }
     flex-direction: column;
     align-items: flex-start;
     text-align: left;
-    padding: 34px 28px 24px;
+    padding: 44px 36px 32px;
     background: var(--paper-card);
     border: 1px solid var(--line);
     border-radius: 10px;
