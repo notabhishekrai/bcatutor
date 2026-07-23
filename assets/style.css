@@ -970,6 +970,22 @@ html { scroll-behavior: smooth; }
     color: #9C3D8B;
 }
 
+.math-select {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 0.82rem;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+    color: var(--ink);
+}
+
+.math-select:hover {
+    border-color: #9C3D8B;
+    color: #9C3D8B;
+}
+
 .math-preview {
     min-height: 1.2em;
     padding: 8px 12px;

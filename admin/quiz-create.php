@@ -127,8 +127,18 @@ require __DIR__ . '/../includes/header.php';
             <button type="button" class="math-btn" data-before="$x_{1}$" data-after="">Subscript</button>
             <button type="button" class="math-btn" data-before="$\sqrt{x}$" data-after="">&radic; Surd</button>
             <button type="button" class="math-btn" data-before="$\sqrt[n]{x}$" data-after="">&#8319;&radic; Root</button>
-            <button type="button" class="math-btn" data-before="$\begin{bmatrix} a & b \\ c & d \end{bmatrix}$" data-after="">Matrix</button>
             <button type="button" class="math-btn" data-before="$\sum_{i=1}^{n}$" data-after="">&sum; Summation</button>
+            <select class="math-select" id="matrix-type-select">
+                <option value="" selected disabled>Matrix &#9662;</option>
+                <option value="$\begin{bmatrix} a &amp; b \\ c &amp; d \end{bmatrix}$">2&times;2 Matrix</option>
+                <option value="$\begin{bmatrix} a &amp; b &amp; c \\ d &amp; e &amp; f \\ g &amp; h &amp; i \end{bmatrix}$">3&times;3 Matrix</option>
+                <option value="$\begin{bmatrix} a &amp; b &amp; c \\ d &amp; e &amp; f \end{bmatrix}$">2&times;3 Matrix</option>
+                <option value="$\begin{bmatrix} a &amp; b \\ c &amp; d \\ e &amp; f \end{bmatrix}$">3&times;2 Matrix</option>
+                <option value="$\begin{bmatrix} a &amp; b &amp; c \end{bmatrix}$">Row Vector (1&times;3)</option>
+                <option value="$\begin{bmatrix} a \\ b \\ c \end{bmatrix}$">Column Vector (3&times;1)</option>
+                <option value="$\begin{bmatrix} 1 &amp; 0 \\ 0 &amp; 1 \end{bmatrix}$">Identity (2&times;2)</option>
+                <option value="$\begin{bmatrix} 1 &amp; 0 &amp; 0 \\ 0 &amp; 1 &amp; 0 \\ 0 &amp; 0 &amp; 1 \end{bmatrix}$">Identity (3&times;3)</option>
+            </select>
         </div>
         <div id="questions-wrap"></div>
         <button type="button" id="add-question-btn" class="button-secondary">+ Add Question</button>

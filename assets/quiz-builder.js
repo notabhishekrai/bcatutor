@@ -194,3 +194,13 @@ document.querySelectorAll('.math-btn[data-before]').forEach(function (btn) {
         insertAtCursor(lastFocusedField, btn.dataset.before, btn.dataset.after || '');
     });
 });
+
+// Matrix type dropdown — same insert-at-cursor behavior as the math-btn buttons,
+// just with more template choices than would fit as individual buttons.
+var matrixSelect = document.getElementById('matrix-type-select');
+if (matrixSelect) {
+    matrixSelect.addEventListener('change', function () {
+        insertAtCursor(lastFocusedField, matrixSelect.value, '');
+        matrixSelect.selectedIndex = 0;
+    });
+}
