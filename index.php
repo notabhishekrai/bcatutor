@@ -27,7 +27,7 @@ require __DIR__ . '/includes/header.php';
 
 .landing-inner {
     position: relative;
-    max-width: 760px;
+    max-width: 960px;
     margin: 0 auto;
     padding-left: 44px;
 }
