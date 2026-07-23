@@ -102,7 +102,7 @@ require __DIR__ . '/includes/header.php';
 /* Two entry points, styled as folder tabs */
 .tab-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 20px;
     margin-bottom: 64px;
 }
@@ -135,6 +135,7 @@ require __DIR__ . '/includes/header.php';
 
 .tab-card--notes::before { background: var(--pine); }
 .tab-card--blog::before { background: var(--mustard); }
+.tab-card--quiz::before { background: #9C3D8B; }
 
 .tab-card:hover {
     transform: translateY(-3px);
@@ -169,6 +170,7 @@ require __DIR__ . '/includes/header.php';
 
 .tab-card--notes .go { color: var(--pine); }
 .tab-card--blog .go { color: #A8792A; }
+.tab-card--quiz .go { color: #9C3D8B; }
 
 /* How it's organized — a real sequence, so numbers are earned here */
 .flow {
@@ -270,6 +272,11 @@ require __DIR__ . '/includes/header.php';
         </p>
 
         <div class="tab-row">
+            <a href="quizzes" class="tab-card tab-card--quiz" data-tab="Practice">
+                <h2>BCA Entrance</h2>
+                <p>Practice quizzes to help you prepare for the BCA entrance exam.</p>
+                <span class="go btn">Take a Quiz &rarr;</span>
+            </a>
             <a href="semesters" class="tab-card tab-card--notes" data-tab="Coursework">
                 <h2>Notes & Solutions</h2>
                 <p>Browse by semester, then subject. Class notes and solved papers, side by side.</p>
