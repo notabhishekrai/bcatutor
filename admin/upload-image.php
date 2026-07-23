@@ -30,12 +30,6 @@ if ($file['size'] > 5 * 1024 * 1024) {
     exit;
 }
 
-// Generate a random filename — never trust or reuse the uploaded filename directly
-$extension = $allowedTypes[$mimeType];
-$filename = bin2hex(random_bytes(16)) . '.' . $extension;
-$uploadDir = __DIR__ . '/../uploads/';
-$destination = $uploadDir . $filename;
-
 // ---- Resize + compress before saving, to keep storage/bandwidth low ----
 $maxWidth = 1200; // no blog post needs images wider than this
 
@@ -93,7 +87,3 @@ imagedestroy($image);
 
 echo json_encode(['url' => '/uploads/' . $filename]);
 exit;
-
-
-
-echo json_encode(['url' => '/uploads/' . $filename]);

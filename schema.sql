@@ -11,12 +11,16 @@ CREATE TABLE posts (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     slug VARCHAR(255) NOT NULL UNIQUE,
-    type ENUM('note', 'blog', 'solution') NOT NULL DEFAULT 'blog',
+    type ENUM('note', 'blog', 'solution', 'question_paper') NOT NULL DEFAULT 'blog',
     semester TINYINT NULL,
     subject VARCHAR(100) NULL,
     content LONGTEXT NOT NULL,
+    created_by INT NULL,
+    sort_order INT NOT NULL DEFAULT 0,
+    meta_description VARCHAR(160) NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (created_by) REFERENCES admins(id) ON DELETE SET NULL
 );
 
 -- Do NOT insert an admin here yet.
@@ -27,6 +31,9 @@ CREATE TABLE posts (
 -- If you're upgrading an existing database instead of starting fresh,
 -- run this instead of the CREATE TABLE above:
 -- ALTER TABLE posts MODIFY COLUMN semester TINYINT NULL, MODIFY COLUMN subject VARCHAR(100) NULL;
+-- ALTER TABLE posts MODIFY COLUMN type ENUM('note', 'blog', 'solution', 'question_paper') NOT NULL DEFAULT 'blog';
+-- ALTER TABLE posts ADD COLUMN created_by INT NULL, ADD COLUMN sort_order INT NOT NULL DEFAULT 0, ADD COLUMN meta_description VARCHAR(160) NULL;
+-- ALTER TABLE posts ADD FOREIGN KEY (created_by) REFERENCES admins(id) ON DELETE SET NULL;
 
 -- ---- Quiz feature ----
 -- Run this to add the quiz tables to an existing database.

@@ -150,6 +150,19 @@ body {
 
 .nav-link:hover { color: var(--ink); }
 
+/* Logout is a POST form (CSRF-protected) but should look identical to the
+   other plain <a class="nav-link"> items sitting next to it */
+.nav-logout-form {
+    display: contents;
+}
+
+button.nav-link {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
 .site-main {
     max-width: 800px;
     margin: 0 auto;
@@ -472,8 +485,6 @@ body {
     margin-top: 4px;
 }
 
-.content-section { margin-top: 36px; }
-.content-section h2 { border-bottom: 1px solid #eee; padding-bottom: 8px; }
 .subject-meta { color: #888; margin-top: -8px; }
 .empty-state { color: #999; font-style: italic; }
 

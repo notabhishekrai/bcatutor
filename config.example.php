@@ -44,7 +44,10 @@ try {
         ]
     );
 } catch (PDOException $e) {
-    die("Database connection failed. Check config.php details. (" . $e->getMessage() . ")");
+    // Never echo $e->getMessage() here — PDO connection errors often include the
+    // DB host/username, and this die() runs before display_errors is relevant
+    // (it's an explicit message, not a suppressed PHP error/warning).
+    die("Something went wrong loading this page. Please try again shortly.");
 }
 
 function isLoggedIn() {
@@ -113,8 +116,15 @@ function sanitizeHtml($html) {
                 $toRemove[] = $attr->nodeName;
                 continue;
             }
-            if (in_array($name, ['href', 'src'], true) && preg_match('/^\s*(javascript|data|vbscript):/i', $attr->nodeValue)) {
-                $toRemove[] = $attr->nodeName;
+            if (in_array($name, ['href', 'src'], true)) {
+                // Allowlist, not a blocklist: a scheme blocklist like "reject javascript:"
+                // is bypassable with embedded control characters (e.g. "jav\tascript:") that
+                // browsers strip when parsing the URL but a naive regex won't catch. Stripping
+                // the same tab/newline/CR characters before validating closes that gap.
+                $normalizedUrl = preg_replace('/[\t\r\n]/', '', $attr->nodeValue);
+                if ($normalizedUrl !== '' && !preg_match('~^(https?://|mailto:|tel:|/|#)~i', trim($normalizedUrl))) {
+                    $toRemove[] = $attr->nodeName;
+                }
             }
             if (in_array($name, ['colspan', 'rowspan'], true) && !ctype_digit($attr->nodeValue)) {
                 $toRemove[] = $attr->nodeName;
