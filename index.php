@@ -280,7 +280,7 @@ require __DIR__ . '/includes/header.php';
             <a href="semesters" class="tab-card tab-card--notes" data-tab="Coursework">
                 <h2>Notes & Solutions</h2>
                 <p>Browse by semester, then subject. Class notes and solved papers, side by side.</p>
-                <span class="go btn">Browse Notes & Solutions &rarr;</span>
+                <span class="go btn">Browse Notes | Solutions &rarr;</span>
             </a>
             <a href="blog" class="tab-card tab-card--blog" data-tab="Writing">
                 <h2>Blog</h2>
