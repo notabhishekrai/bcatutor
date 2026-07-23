@@ -41,7 +41,15 @@
     <?php endif; ?>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/style.css">
+    <?php
+    // Cache-busting: appending the file's own last-modified time means every
+    // edit automatically changes this URL, so browsers (and the CDN) fetch
+    // the new file immediately instead of reusing a stale cached copy —
+    // exactly what caused the phone's normal tab to show outdated card CSS
+    // while a cache-free private tab saw the current version fine.
+    $styleVersion = @filemtime(__DIR__ . '/../assets/style.css') ?: time();
+    ?>
+    <link rel="stylesheet" href="/assets/style.css?v=<?= $styleVersion ?>">
 </head>
 <body>
     <header class="site-header">
