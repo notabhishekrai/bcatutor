@@ -854,11 +854,27 @@ html { scroll-behavior: smooth; }
     line-height: 1.5;
 }
 
-.quiz-question-text .katex-display,
-.quiz-option .katex-display,
-.math-preview .katex-display {
+.quiz-question-text .katex,
+.quiz-option .katex,
+.math-preview .katex {
+    /* Matrices/fractions render as INLINE katex (single $...$), which has no
+       built-in wrapping — without this, a wide matrix pushes its flex/block
+       parent wider than the viewport and the whole page scrolls sideways
+       on narrow screens. display:inline-block + max-width:100% lets the
+       formula itself scroll instead of the page. */
+    display: inline-block;
+    max-width: 100%;
     overflow-x: auto;
     overflow-y: hidden;
+    vertical-align: middle;
+}
+
+.quiz-option span {
+    /* Flex items default to min-width:auto, which ignores the sibling's
+       max-width rule above and lets a wide formula overflow anyway —
+       min-width:0 lets this shrink to the available row width. */
+    min-width: 0;
+    flex: 1;
 }
 
 .quiz-question-image {

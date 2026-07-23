@@ -117,7 +117,7 @@ $optionLabels = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
                     }
                     ?>
                     <div class="<?= implode(' ', $classes) ?>">
-                        <strong><?= $optionLabels[$letter] ?>.</strong> <?= htmlspecialchars($q['option_' . $letter]) ?>
+                        <span><strong><?= $optionLabels[$letter] ?>.</strong> <?= htmlspecialchars($q['option_' . $letter]) ?></span>
                     </div>
                 <?php endforeach; ?>
             </div>
