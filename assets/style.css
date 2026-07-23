@@ -1040,3 +1040,35 @@ html { scroll-behavior: smooth; }
     .quiz-question { padding: 18px 16px; }
     .quiz-result-score { font-size: 2.1rem; }
 }
+
+/* ---- Quiz results: Print / Save as PDF ---- */
+@media print {
+    .site-header,
+    .site-footer,
+    .nav-toggle,
+    .breadcrumb,
+    .no-print {
+        display: none !important;
+    }
+
+    .site-main, .site-main--wide, .site-main--full {
+        max-width: 100%;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+    }
+
+    .quiz-question {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    /* Browsers drop background colors by default when printing —
+       these are what show which option was correct/incorrect */
+    .quiz-option-correct,
+    .quiz-option-incorrect,
+    .quiz-result-summary {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}

@@ -87,42 +87,13 @@ $optionLabels = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
     <?php
     $total = count($questions);
     $percent = $total > 0 ? round(($score / $total) * 100) : 0;
-
-    // Build a plain-text summary for the download button — computed here,
-    // server-side, from the same $results used to render the page below.
-    $lines = [];
-    $lines[] = $quiz['title'] . ' — Quiz Results';
-    $lines[] = 'Date: ' . date('F j, Y g:i A');
-    $lines[] = 'Score: ' . $score . ' / ' . $total . ' (' . $percent . '%)';
-    $lines[] = str_repeat('-', 40);
-    foreach ($results as $i => $r) {
-        $q = $r['question'];
-        $lines[] = ($i + 1) . '. ' . $q['question_text'];
-        if (!empty($q['question_image'])) {
-            $lines[] = '   [Image: ' . $q['question_image'] . ']';
-        }
-        foreach (['a', 'b', 'c', 'd'] as $letter) {
-            $marker = '   ';
-            if ($letter === $q['correct_option']) {
-                $marker = ' * ';
-            }
-            if ($letter === $r['selected'] && !$r['is_correct']) {
-                $marker = ' X ';
-            }
-            $lines[] = $marker . $optionLabels[$letter] . '. ' . $q['option_' . $letter];
-        }
-        $lines[] = 'Your answer: ' . ($r['selected'] ? $optionLabels[$r['selected']] : '(no answer)') . ' — ' . ($r['is_correct'] ? 'Correct' : 'Incorrect');
-        $lines[] = '';
-    }
-    $resultText = implode("\n", $lines);
-    $downloadFilename = $quiz['slug'] . '-results.txt';
     ?>
 
     <div class="quiz-result-summary">
         <div class="quiz-result-score"><?= $score ?> / <?= $total ?></div>
         <div class="quiz-result-label"><?= $percent ?>% correct</div>
-        <div class="quiz-result-actions">
-            <button type="button" id="download-results-btn" class="button">Download Results (.txt)</button>
+        <div class="quiz-result-actions no-print">
+            <button type="button" id="print-results-btn" class="button">Print / Save as PDF</button>
             <a href="take-quiz.php?slug=<?= urlencode($quiz['slug']) ?>" class="button-secondary">Retake Quiz</a>
         </div>
     </div>
@@ -154,19 +125,8 @@ $optionLabels = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
     <?php endforeach; ?>
 
     <script>
-        var resultText = <?= json_encode($resultText, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
-        var downloadFilename = <?= json_encode($downloadFilename, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
-
-        document.getElementById('download-results-btn').addEventListener('click', function () {
-            var blob = new Blob([resultText], { type: 'text/plain' });
-            var url = URL.createObjectURL(blob);
-            var link = document.createElement('a');
-            link.href = url;
-            link.download = downloadFilename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+        document.getElementById('print-results-btn').addEventListener('click', function () {
+            window.print();
         });
     </script>
 
