@@ -21,6 +21,11 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    /* Safety net: a long unbroken token (pasted URL, code, etc.) anywhere on
+       the site can otherwise force the whole page into horizontal scroll on
+       a narrow phone screen. Only kicks in when a word truly has nowhere
+       else to break — normal text wrapping is unaffected. */
+    overflow-wrap: break-word;
 }
 .site-header {
     display: flex;
@@ -609,7 +614,9 @@ html { scroll-behavior: smooth; }
     border: 1px solid var(--line);
     border-radius: 6px;
     font-family: 'Work Sans', sans-serif;
-    font-size: 0.9rem;
+    /* iOS Safari auto-zooms the page when a tapped form field is under
+       16px — 1rem here (not the old 0.9rem) avoids that on the dashboard. */
+    font-size: 1rem;
     background: var(--paper-card);
 }
 
@@ -620,7 +627,7 @@ html { scroll-behavior: smooth; }
     border: 1px solid var(--line);
     border-radius: 6px;
     font-family: 'Work Sans', sans-serif;
-    font-size: 0.9rem;
+    font-size: 1rem;
     background: var(--paper-card);
     min-width: 200px;
 }
@@ -1002,6 +1009,14 @@ html { scroll-behavior: smooth; }
     font-size: 1.05rem;
 }
 
+.table-scroll .leaderboard-table {
+    /* .table-scroll .admin-table sets min-width:640px for the wide 6-column
+       admin tables — this only has 4 narrow columns and fits a phone screen
+       fine on its own, so undo that and let it size naturally instead of
+       forcing a horizontal scrollbar that isn't actually needed. */
+    min-width: 0;
+}
+
 .leaderboard-row-you {
     background: rgba(156, 61, 139, 0.08);
 }
@@ -1158,6 +1173,10 @@ html { scroll-behavior: smooth; }
 @media (max-width: 640px) {
     .quiz-question { padding: 18px 16px; }
     .quiz-result-score { font-size: 2.1rem; }
+
+    /* iOS Safari auto-zooms on a tapped <select>/<input> under 16px — only
+       need this override on phones, so the compact toolbar look stays on desktop. */
+    .math-select { font-size: 1rem; }
 }
 
 /* ---- Quiz results: Print / Save as PDF ---- */
