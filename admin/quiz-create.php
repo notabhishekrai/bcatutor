@@ -150,7 +150,13 @@ require __DIR__ . '/../includes/header.php';
     </div>
 </form>
 
-<script src="/assets/quiz-builder.js"></script>
+<?php
+// Cache-busting: without this, a browser that cached quiz-builder.js before
+// a feature was added (e.g. the matrix dropdown) keeps silently running the
+// old script — same fix as the style.css versioning in includes/header.php.
+$quizBuilderVersion = @filemtime(__DIR__ . '/../assets/quiz-builder.js') ?: time();
+?>
+<script src="/assets/quiz-builder.js?v=<?= $quizBuilderVersion ?>"></script>
 <script>
 <?php if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['question_text'])): ?>
     // Redisplay whatever was submitted, so a validation error doesn't wipe out the admin's work

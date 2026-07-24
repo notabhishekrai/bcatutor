@@ -196,7 +196,13 @@ require __DIR__ . '/../includes/header.php';
     </div>
 </form>
 
-<script src="/assets/quiz-builder.js"></script>
+<?php
+// Cache-busting: without this, a browser that cached quiz-builder.js before
+// a feature was added (e.g. the matrix dropdown) keeps silently running the
+// old script — same fix as the style.css versioning in includes/header.php.
+$quizBuilderVersion = @filemtime(__DIR__ . '/../assets/quiz-builder.js') ?: time();
+?>
+<script src="/assets/quiz-builder.js?v=<?= $quizBuilderVersion ?>"></script>
 <script>
 const existingQuestions = <?= json_encode($displayQuestions, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
 if (existingQuestions.length > 0) {
